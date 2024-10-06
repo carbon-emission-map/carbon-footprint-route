@@ -1,102 +1,94 @@
-function getLatLng(location) {
-    const apiKey = "YOUR_API_KEY"; // 使用您自己的 API 金鑰
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location},台中市,台灣&key=${apiKey}`;
-    
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.results.length > 0) {
-                return {
-                    lat: data.results[0].geometry.location.lat,
-                    lng: data.results[0].geometry.location.lng
-                };
-            }
-            throw new Error("無法找到位置");
-        });
-}
-function calculateEmissions(distance, mode) {
-    const emissionsFactors = {
-        'walking': 0,
-        'bicycling': 0,
-        'transit': 101,
-        'driving': 271,
-        'scooter': 80
-    };
-    return (distance / 1000) * emissionsFactors[mode];
-}
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>路線規劃</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <title>碳足跡路線查詢</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
-        #map {
-            height: 500px;
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"] {
             width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        #result {
+            padding: 10px;
+            background-color: #e9ffe9;
+            border: 1px solid #b5ffb5;
+            border-radius: 4px;
+            font-size: 18px;
+            color: #333;
+            min-height: 50px;
+            display: none;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>碳足跡路線查詢</h1>
+        <form id="routeForm">
+            <label for="start">出發點：</label>
+            <input type="text" id="start" name="start" placeholder="輸入出發點">
 
-<h1>路線規劃</h1>
-<label for="start">出發點:</label>
-<input type="text" id="start" placeholder="例如: 台中市">
-<br>
-<label for="end">目的地:</label>
-<input type="text" id="end" placeholder="例如: 台北市">
-<br>
-<button id="submit">查詢</button>
+            <label for="destination">目的地：</label>
+            <input type="text" id="destination" name="destination" placeholder="輸入目的地">
 
-<div id="map"></div>
-<div id="results"></div>
+            <button type="submit">查詢路線</button>
+        </form>
+        <div id="result"></div>
+    </div>
 
-<script>
-    // 在這裡添加您所有的 JavaScript 函數
-    function getLatLng(location) {
-        // 地理編碼的代碼
-    }
+    <script>
+        document.getElementById('routeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-    function calculateEmissions(distance, mode) {
-        // 碳排放計算的代碼
-    }
+            var start = document.getElementById('start').value;
+            var destination = document.getElementById('destination').value;
 
-    function initMap() {
-        const map = new google.maps.Map(document.getElementById("map"), {
-            zoom: 7,
-            center: { lat: 24.1477, lng: 120.6736 }, // 台中市
+            if (start && destination) {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('result').textContent = "從 " + start + " 到 " + destination + " 的最佳碳足跡路線計算結果將在此顯示。";
+            } else {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('result').textContent = "請輸入完整的出發點和目的地。";
+            }
         });
-
-        document.getElementById("submit").addEventListener("click", () => {
-            const start = document.getElementById("start").value;
-            const end = document.getElementById("end").value;
-
-            const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer();
-            directionsRenderer.setMap(map);
-
-            directionsService.route(
-                {
-                    origin: start,
-                    destination: end,
-                    travelMode: google.maps.TravelMode.DRIVING,
-                },
-                (response, status) => {
-                    if (status === "OK") {
-                        directionsRenderer.setDirections(response);
-                    } else {
-                        alert("方向查詢失敗: " + status);
-                    }
-                }
-            );
-        });
-    }
-    window.onload = initMap;
-</script>
+    </script>
 </body>
 </html>
