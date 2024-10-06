@@ -3,55 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>路線規劃</title>
-    <script>
-        // 定義 getLatLng 函數
-        function getLatLng(location) {
-            const apiKey = "YOUR_API_KEY"; // 使用您自己的 API 金鑰
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location},台中市,台灣&key=${apiKey}`;
-            return fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.results.length > 0) {
-                        return {
-                            lat: data.results[0].geometry.location.lat,
-                            lng: data.results[0].geometry.location.lng
-                        };
-                    }
-                    throw new Error("無法找到位置");
-                });
+    <title>碳足跡路線規劃</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
-
-        // 定義 calculateEmissions 函數
-        function calculateEmissions(distance, mode) {
-            const emissionsFactors = {
-                'walking': 0,
-                'bicycling': 0,
-                'transit': 101,
-                'driving': 271,
-                'scooter': 80
-            };
-            return (distance / 1000) * emissionsFactors[mode];
+        input, select {
+            margin: 10px 0;
+            padding: 10px;
+            width: 300px;
         }
-
-        // 提交查詢的函數
-        function submitQuery() {
-            const location = document.getElementById("location").value;
-            getLatLng(location)
-                .then(latLng => {
-                    console.log(`經緯度: ${latLng.lat}, ${latLng.lng}`);
-                    // 在此處可以進一步處理，如計算碳排放等
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+        #checkpoints {
+            margin: 20px 0;
         }
-    </script>
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
-    <h1>路線規劃</h1>
-    <label for="location">輸入地址:</label>
-    <input type="text" id="location" placeholder="例如: 台中火車站">
-    <button onclick="submitQuery()">查詢</button>
+
+<h1>碳足跡路線規劃</h1>
+
+<label for="start">出發點：</label>
+<input type="text" id="start" placeholder="請輸入出發點">
+
+<label for="destination">目的地：</label>
+<input type="text" id="destination" placeholder="請輸入目的地">
+
+<label for="checkpointsNum">檢測點數量：</label>
+<select id="checkpointsNum">
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+</select>
+
+<div id="checkpoints"></div>
+
+<button id="submitBtn">提交</button>
+
+<div class="result" id="result" style="display:none;">
+    <h2>結果：</h2>
+    <p id="resultText"></p>
+</div>
+
+<script>
+    const checkpointsNum = document.getElementById('checkpointsNum');
+    const checkpointsDiv = document.getElementById('checkpoints');
+    const resultDiv = document.getElementById('result');
+    const resultText = document.getElementById('resultText');
+
+    checkpointsNum.addEventListener('change', function() {
+        const num = this.value;
+        checkpointsDiv.innerHTML = '';
+        
+        for (let i = 0; i < num; i++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = '檢測點 ' + (i + 1);
+            checkpointsDiv.appendChild(input);
+        }
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        const start = document.getElementById('start').value;
+        const destination = document.getElementById('destination').value;
+        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('input')).map(input => input.value);
+
+        resultText.innerHTML = `
+            出發點: ${start} <br>
+            目的地: ${destination} <br>
+            檢測點: ${checkpoints.join(', ')}
+        `;
+        resultDiv.style.display = 'block';
+    });
+</script>
+
 </body>
 </html>
