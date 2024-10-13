@@ -36,6 +36,13 @@
             min-height: 50px;
             display: none;
         }
+        #map {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
         button {
             margin-top: 10px;
         }
@@ -60,34 +67,20 @@
         <label for="checkpointsNum">檢測點數量：</label>
         <select class="form-control" id="checkpointsNum">
             <option value="0">0</option>
-            <option value="1">梧棲</option>
-            <option value="2">高美濕地</option>
-            <option value="3">台中國際機場</option>
-            <option value="4">台中港</option>
-            <option value="5">港區藝術中心</option>
-            <option value="6">清水車站</option>
-            <option value="7">大甲車站</option>
-            <option value="8">靜宜大學</option>
-            <option value="9">弘光科技大學</option>
-            <option value="10">東海大學</option>
-            <option value="11">澄清醫院</option>
-            <option value="12">秋紅谷</option>
-            <option value="13">市政府</option>
-            <option value="14">科博館</option>
-            <option value="15">茄苳腳</option>
-            <option value="16">第二市場</option>
-            <option value="17">火車站</option>
-            <option value="18">國軍英雄館</option>
-            <option value="19">台中公園</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
         </select>
     </div>
 
-    <div class="form-group">
-        <label for="checkpoint1">檢測點1：</label>
-        <input type="text" class="form-control mb-2" id="checkpoint1" placeholder="檢測點1">
-        <label for="checkpoint2">檢測點2：</label>
-        <input type="text" class="form-control mb-2" id="checkpoint2" placeholder="檢測點2">
-    </div>
+    <div id="checkpointsDiv"></div>
 
     <button class="btn btn-success" id="submitBtn">查詢路線</button>
 
@@ -95,16 +88,45 @@
         <h2>結果：</h2>
         <p id="resultText"></p>
     </div>
+
+    <div id="map"></div> <!-- 地圖顯示區域 -->
 </div>
 
 <script>
+    const checkpointsNum = document.getElementById('checkpointsNum');
+    const checkpointsDiv = document.getElementById('checkpointsDiv');
+    const resultDiv = document.getElementById('result');
+    const resultText = document.getElementById('resultText');
+
+    const locations = [
+        "梧棲", "高美濕地", "台中國際機場", "台中港", "港區藝術中心", 
+        "清水車站", "大甲車站", "靜宜大學", "弘光科技大學", "東海大學", 
+        "澄清醫院", "秋紅谷", "市政府", "科博館", "茄苳腳", 
+        "第二市場", "火車站", "國軍英雄館", "台中公園"
+    ];
+
+    checkpointsNum.addEventListener('change', function() {
+        const num = this.value;
+        checkpointsDiv.innerHTML = '';
+        
+        for (let i = 0; i < num; i++) {
+            const select = document.createElement('select');
+            select.className = 'form-control mb-2';
+            select.placeholder = '檢測點 ' + (i + 1);
+            locations.forEach((location, index) => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                select.appendChild(option);
+            });
+            checkpointsDiv.appendChild(select);
+        }
+    });
+
     document.getElementById('submitBtn').addEventListener('click', function() {
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
-        const checkpoint1 = document.getElementById('checkpoint1').value;
-        const checkpoint2 = document.getElementById('checkpoint2').value;
-
-        const checkpoints = [checkpoint1, checkpoint2].filter(cp => cp); // 過濾空值
+        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
         resultText.innerHTML = `
             出發點: ${start} <br>
@@ -112,6 +134,9 @@
             檢測點: ${checkpoints.join(', ')}
         `;
         resultDiv.style.display = 'block';
+
+        // 地圖顯示邏輯（需要整合地圖 API，這裡為示範）
+        document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
     });
 </script>
 
