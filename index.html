@@ -57,7 +57,7 @@
     </div>
 
     <div class="form-group">
-        <label for="checkpointsNum">檢測點：</label>
+        <label for="checkpointsNum">檢測點數量：</label>
         <select class="form-control" id="checkpointsNum">
             <option value="0">0</option>
             <option value="1">梧棲</option>
@@ -82,7 +82,12 @@
         </select>
     </div>
 
-    <div id="checkpoints"></div>
+    <div class="form-group">
+        <label for="checkpoint1">檢測點1：</label>
+        <input type="text" class="form-control mb-2" id="checkpoint1" placeholder="檢測點1">
+        <label for="checkpoint2">檢測點2：</label>
+        <input type="text" class="form-control mb-2" id="checkpoint2" placeholder="檢測點2">
+    </div>
 
     <button class="btn btn-success" id="submitBtn">查詢路線</button>
 
@@ -93,28 +98,13 @@
 </div>
 
 <script>
-    const checkpointsNum = document.getElementById('checkpointsNum');
-    const checkpointsDiv = document.getElementById('checkpoints');
-    const resultDiv = document.getElementById('result');
-    const resultText = document.getElementById('resultText');
-
-    checkpointsNum.addEventListener('change', function() {
-        const num = this.value;
-        checkpointsDiv.innerHTML = '';
-        
-        for (let i = 0; i < num; i++) {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'form-control mb-2';
-            input.placeholder = '檢測點 ' + (i + 1);
-            checkpointsDiv.appendChild(input);
-        }
-    });
-
     document.getElementById('submitBtn').addEventListener('click', function() {
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
-        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('input')).map(input => input.value);
+        const checkpoint1 = document.getElementById('checkpoint1').value;
+        const checkpoint2 = document.getElementById('checkpoint2').value;
+
+        const checkpoints = [checkpoint1, checkpoint2].filter(cp => cp); // 過濾空值
 
         resultText.innerHTML = `
             出發點: ${start} <br>
