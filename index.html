@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>碳足跡路線查詢</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             background-color: #f4f4f4;
+            font-family: 'Roboto', sans-serif;
         }
         .container {
             max-width: 800px;
@@ -22,19 +24,7 @@
         h1 {
             text-align: center;
             color: #333;
-        }
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: block;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
             margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
         }
         #result {
             padding: 10px;
@@ -47,58 +37,59 @@
             display: none;
         }
         button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
+            margin-top: 10px;
         }
     </style>
-</head><body>
+</head>
+<body>
 
-<h1>碳足跡路線規劃</h1>
+<div class="container">
+    <h1>碳足跡路線規劃</h1>
 
-<label for="start">出發點：</label>
-<input type="text" id="start" placeholder="請輸入出發點">
+    <div class="form-group">
+        <label for="start">出發點：</label>
+        <input type="text" class="form-control" id="start" placeholder="請輸入出發點">
+    </div>
 
-<label for="destination">目的地：</label>
-<input type="text" id="destination" placeholder="請輸入目的地">
+    <div class="form-group">
+        <label for="destination">目的地：</label>
+        <input type="text" class="form-control" id="destination" placeholder="請輸入目的地">
+    </div>
 
-<label for="checkpointsNum">檢測點：</label>
-<select id="checkpointsNum">
-    <option value="0">0</option>
-    <option value="1">梧棲</option>
-    <option value="2">高美濕地</option>
-    <option value="3">台中國際機場</option>
-    <option value="4">台中港</option>
-    <option value="5">港區藝術中心</option>
-    <option value="6">清水車站</option>
-    <option value="7">大甲車站</option>
-    <option value="8">靜宜大學</option>
-    <option value="9">弘光科技大學</option>
-    <option value="10">東海大學</option>
-    <option value="11">澄清醫院</option>
-    <option value="12">秋紅谷</option>
-    <option value="13">市政府</option>
-    <option value="14">科博館</option>
-    <option value="15">茄苳腳</option>
-    <option value="16">第二市場</option>
-    <option value="17">火車站</option>
-    <option value="18">國軍英雄館</option>
-    <option value="19">台中公園</option>
-</select>
+    <div class="form-group">
+        <label for="checkpointsNum">檢測點：</label>
+        <select class="form-control" id="checkpointsNum">
+            <option value="0">0</option>
+            <option value="1">梧棲</option>
+            <option value="2">高美濕地</option>
+            <option value="3">台中國際機場</option>
+            <option value="4">台中港</option>
+            <option value="5">港區藝術中心</option>
+            <option value="6">清水車站</option>
+            <option value="7">大甲車站</option>
+            <option value="8">靜宜大學</option>
+            <option value="9">弘光科技大學</option>
+            <option value="10">東海大學</option>
+            <option value="11">澄清醫院</option>
+            <option value="12">秋紅谷</option>
+            <option value="13">市政府</option>
+            <option value="14">科博館</option>
+            <option value="15">茄苳腳</option>
+            <option value="16">第二市場</option>
+            <option value="17">火車站</option>
+            <option value="18">國軍英雄館</option>
+            <option value="19">台中公園</option>
+        </select>
+    </div>
 
-<div id="checkpoints"></div>
+    <div id="checkpoints"></div>
 
-<button id="submitBtn">查詢路線</button>
+    <button class="btn btn-success" id="submitBtn">查詢路線</button>
 
-<div class="result" id="result" style="display:none;">
-    <h2>結果：</h2>
-    <p id="resultText"></p>
+    <div class="result" id="result" style="display:none;">
+        <h2>結果：</h2>
+        <p id="resultText"></p>
+    </div>
 </div>
 
 <script>
@@ -114,6 +105,7 @@
         for (let i = 0; i < num; i++) {
             const input = document.createElement('input');
             input.type = 'text';
+            input.className = 'form-control mb-2';
             input.placeholder = '檢測點 ' + (i + 1);
             checkpointsDiv.appendChild(input);
         }
