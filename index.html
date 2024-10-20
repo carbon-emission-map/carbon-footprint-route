@@ -158,29 +158,34 @@
         };
 
         // 發送 POST 請求到 Flask API
-        fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            // 處理後端回應的數據，並在前端顯示
-            resultText.innerHTML = `
-                出發點: ${data.start} <br>
-                目的地: ${data.destination} <br>
-                檢測點: ${data.checkpoints.join(', ')} <br>
-                碳排放: ${data.carbon} kg <br>
-                時間: ${data.time} 小時 <br>
-                距離: ${data.distance} 公里
-            `;
-            resultDiv.style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        // 發送 POST 請求到 Flask API
+fetch('https://calm-cove-01291-ecc713083951.herokuapp.com/api/route', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestData)
+})
+.then(response => response.json())
+.then(data => {
+    // 處理後端回應的數據，並在前端顯示
+    if (data.error) {
+        resultText.innerHTML = `錯誤: ${data.error}`;
+    } else {
+        // 假設返回最佳路徑的數據，這裡可以根據你的需求進行修改
+        resultText.innerHTML = data.map(route => `
+            交通方式: ${route.mode} <br>
+            碳排放: ${route.emissions} g CO2 <br>
+            時間: ${route.duration} 秒 <br>
+            距離: ${route.distance} 公尺 <br>
+        `).join('<br>');
+
+        resultDiv.style.display = 'block';
+    }
+})
+.catch(error => {
+    console.error('Error:', error);
+});
 
         // 地圖顯示邏輯（需要整合地圖 API，這裡為示範）
         document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
