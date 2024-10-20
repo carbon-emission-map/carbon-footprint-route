@@ -129,7 +129,7 @@
             const select = document.createElement('select');
             select.className = 'form-control mb-2';
             select.placeholder = '檢測點 ' + (i + 1);
-            locations.forEach((location, index) => {
+            locations.forEach((location) => {
                 const option = document.createElement('option');
                 option.value = location;
                 option.textContent = location;
@@ -143,13 +143,44 @@
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+        const carbon = document.getElementById('carbon').value;
+        const time = document.getElementById('time').value;
+        const distance = document.getElementById('distance').value;
 
-        resultText.innerHTML = `
-            出發點: ${start} <br>
-            目的地: ${destination} <br>
-            檢測點: ${checkpoints.join(', ')}
-        `;
-        resultDiv.style.display = 'block';
+        // 構建要傳送到後端的資料
+        const requestData = {
+            start: start,
+            destination: destination,
+            checkpoints: checkpoints,
+            carbon: carbon,
+            time: time,
+            distance: distance
+        };
+
+        // 發送 POST 請求到 Flask API
+        fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 處理後端回應的數據，並在前端顯示
+            resultText.innerHTML = `
+                出發點: ${data.start} <br>
+                目的地: ${data.destination} <br>
+                檢測點: ${data.checkpoints.join(', ')} <br>
+                碳排放: ${data.carbon} kg <br>
+                時間: ${data.time} 小時 <br>
+                距離: ${data.distance} 公里
+            `;
+            resultDiv.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 
         // 地圖顯示邏輯（需要整合地圖 API，這裡為示範）
         document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
