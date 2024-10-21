@@ -65,18 +65,18 @@
 
     <!-- 新增三個可選按鈕：碳排放、時間、距離 -->
     <div class="form-group">
-        <label>選擇顯示項目：</label><br>
+        <label>選擇需求：</label><br>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="carbon" value="碳排放">
-            <label class="form-check-label" for="carbon">碳排放</label>
+            <input class="form-check-input" type="checkbox" id="carbon" value="節能">
+            <label class="form-check-label" for="carbon">節能</label>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="time" value="時間">
-            <label class="form-check-label" for="time">時間</label>
+            <input class="form-check-input" type="checkbox" id="time" value="省時">
+            <label class="form-check-label" for="time">省時</label>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="distance" value="距離">
-            <label class="form-check-label" for="distance">距離</label>
+            <input class="form-check-input" type="checkbox" id="distance" value="最短距離">
+            <label class="form-check-label" for="distance">最短距離</label>
         </div>
     </div>
 
@@ -146,9 +146,9 @@
 
         // 取得使用者勾選的顯示項目
         const selectedItems = [];
-        if (document.getElementById('carbon').checked) selectedItems.push('碳排放');
-        if (document.getElementById('time').checked) selectedItems.push('時間');
-        if (document.getElementById('distance').checked) selectedItems.push('距離');
+        if (document.getElementById('carbon').checked) selectedItems.push('節能');
+        if (document.getElementById('time').checked) selectedItems.push('省時');
+        if (document.getElementById('distance').checked) selectedItems.push('最短距離');
 
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
