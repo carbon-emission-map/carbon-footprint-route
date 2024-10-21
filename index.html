@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(to bottom, #B2E0F2, #A1C6E7);/* 漸層顏色從淺藍到深藍 */
+            background: linear-gradient(to bottom, #B2E0F2, #A1C6E7);
             font-family: 'Roboto', sans-serif;
         }
         .container {
@@ -63,19 +63,20 @@
         <input type="text" class="form-control" id="destination" placeholder="請輸入目的地">
     </div>
 
-    <!-- 新增碳排放、時間和距離的橫向輸入框 -->
-    <div class="form-group row">
-        <div class="col">
-            <label for="carbon">碳排放：</label>
-            <input type="text" class="form-control" id="carbon" placeholder="0.3">
+    <!-- 新增三個可選按鈕：碳排放、時間、距離 -->
+    <div class="form-group">
+        <label>選擇顯示項目：</label><br>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="carbon" value="碳排放">
+            <label class="form-check-label" for="carbon">碳排放</label>
         </div>
-        <div class="col">
-            <label for="time">時間：</label>
-            <input type="text" class="form-control" id="time" placeholder="0.4">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="time" value="時間">
+            <label class="form-check-label" for="time">時間</label>
         </div>
-        <div class="col">
-            <label for="distance">距離：</label>
-            <input type="text" class="form-control" id="distance" placeholder="0.3">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="distance" value="距離">
+            <label class="form-check-label" for="distance">距離</label>
         </div>
     </div>
 
@@ -129,7 +130,7 @@
             const select = document.createElement('select');
             select.className = 'form-control mb-2';
             select.placeholder = '檢測點 ' + (i + 1);
-            locations.forEach((location) => {
+            locations.forEach((location, index) => {
                 const option = document.createElement('option');
                 option.value = location;
                 option.textContent = location;
@@ -142,50 +143,22 @@
     document.getElementById('submitBtn').addEventListener('click', function() {
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
+
+        // 取得使用者勾選的顯示項目
+        const selectedItems = [];
+        if (document.getElementById('carbon').checked) selectedItems.push('碳排放');
+        if (document.getElementById('time').checked) selectedItems.push('時間');
+        if (document.getElementById('distance').checked) selectedItems.push('距離');
+
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
-        const carbon = document.getElementById('carbon').value;
-        const time = document.getElementById('time').value;
-        const distance = document.getElementById('distance').value;
 
-        // 構建要傳送到後端的資料
-        const requestData = {
-            start: start,
-            destination: destination,
-            checkpoints: checkpoints,
-            carbon: carbon,
-            time: time,
-            distance: distance
-        };
-
-        // 發送 POST 請求到 Flask API
-        // 發送 POST 請求到 Flask API
-fetch('https://calm-cove-01291-ecc713083951.herokuapp.com/api/route', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestData)
-})
-.then(response => response.json())
-.then(data => {
-    // 處理後端回應的數據，並在前端顯示
-    if (data.error) {
-        resultText.innerHTML = `錯誤: ${data.error}`;
-    } else {
-        // 假設返回最佳路徑的數據，這裡可以根據你的需求進行修改
-        resultText.innerHTML = data.map(route => `
-            交通方式: ${route.mode} <br>
-            碳排放: ${route.emissions} g CO2 <br>
-            時間: ${route.duration} 秒 <br>
-            距離: ${route.distance} 公尺 <br>
-        `).join('<br>');
-
+        resultText.innerHTML = `
+            出發點: ${start} <br>
+            目的地: ${destination} <br>
+            檢測點: ${checkpoints.join(', ')} <br>
+            顯示項目: ${selectedItems.join(', ')}
+        `;
         resultDiv.style.display = 'block';
-    }
-})
-.catch(error => {
-    console.error('Error:', error);
-});
 
         // 地圖顯示邏輯（需要整合地圖 API，這裡為示範）
         document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
