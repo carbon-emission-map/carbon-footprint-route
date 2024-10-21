@@ -152,15 +152,56 @@
 
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
-        resultText.innerHTML = `
-            出發點: ${start} <br>
-            目的地: ${destination} <br>
-            檢測點: ${checkpoints.join(', ')} <br>
-            顯示項目: ${selectedItems.join(', ')}
-        `;
+        // 更新結果顯示
+        resultText.innerHTML = `出發點: ${start} <br> 目的地: ${destination} <br> 檢測點: ${checkpoints.join(', ')} <br> 顯示項目: ${selectedItems.join(', ')}`;
         resultDiv.style.display = 'block';
 
-        // 地圖顯示邏輯（需要整合地圖 API，這裡為示範）
+        // 發送 AJAX 請求
+        const weights = {
+            emissions: document.getElementById('carbon').checked ? 1 : 0,
+            time: document.getElementById('time').checked ? 1 : 0,
+            distance: document.getElementById('distance').checked ? 1 : 0
+        };
+
+        const requestData = {
+            start_point: start,
+            end_point: destination,
+            checkpoints: checkpoints,
+            weights: weights
+        };
+
+        fetch('/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultText.innerHTML += `<br><strong>錯誤:</strong> ${data.error}`;
+            } else {
+                // 在這裡顯示回傳的結果
+                let output = "<strong>最佳路徑:</strong><br>";
+                data.forEach(route => {
+                    output += `
+                        交通方式: ${route.mode} <br>
+                        碳排放: ${route.emissions} g CO2 <br>
+                        時間: ${route.duration} 秒 <br>
+                        距離: ${route.distance} 米 <br>
+                        <br>
+                    `;
+                });
+                resultText.innerHTML += output;
+            }
+        })
+        .catch(error => {
+            console.error('錯誤:', error);
+            resultText.innerHTML += `<br><strong>錯誤:</strong> 無法獲取路線資料`;
+        });
+
+        // 地圖顯示邏輯（這裡為示範）
         document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
     });
 </script>
