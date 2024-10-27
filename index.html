@@ -1,12 +1,10 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>碳足跡路線查詢</title>
-    <!-- 引入 Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- 引入 Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -26,7 +24,7 @@
             color: #333;
             margin-bottom: 20px;
         }
-        #result {
+        .result, .map-container {
             padding: 10px;
             background-color: #e9ffe9;
             border: 1px solid #b5ffb5;
@@ -34,6 +32,7 @@
             font-size: 18px;
             color: #333;
             min-height: 50px;
+            margin-top: 10px;
             display: none;
         }
         #map {
@@ -41,7 +40,6 @@
             height: 300px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            margin-top: 20px;
         }
         button {
             margin-top: 10px;
@@ -63,7 +61,6 @@
         <input type="text" class="form-control" id="destination" placeholder="請輸入目的地">
     </div>
 
-    <!-- 新增三個可選按鈕：碳排放、時間、距離 -->
     <div class="form-group">
         <label>選擇需求：</label><br>
         <div class="form-check form-check-inline">
@@ -101,12 +98,17 @@
 
     <button class="btn btn-success" id="submitBtn">查詢路線</button>
 
-    <div class="result" id="result" style="display:none;">
+    <!-- 查詢結果方框 -->
+    <div class="result" id="result">
         <h2>結果：</h2>
         <p id="resultText"></p>
     </div>
 
-    <div id="map"></div> <!-- 地圖顯示區域 -->
+    <!-- 地圖方框 -->
+    <div class="map-container">
+        <h2>地圖結果：</h2>
+        <div id="map"></div>
+    </div>
 </div>
 
 <script>
@@ -114,6 +116,7 @@
     const checkpointsDiv = document.getElementById('checkpointsDiv');
     const resultDiv = document.getElementById('result');
     const resultText = document.getElementById('resultText');
+    const mapContainer = document.querySelector('.map-container');
 
     const locations = [
         "選擇一個檢測點", "梧棲", "高美濕地", "台中國際機場", "台中港", "港區藝術中心", 
@@ -130,7 +133,7 @@
             const select = document.createElement('select');
             select.className = 'form-control mb-2';
             select.placeholder = '檢測點 ' + (i + 1);
-            locations.forEach((location, index) => {
+            locations.forEach((location) => {
                 const option = document.createElement('option');
                 option.value = location;
                 option.textContent = location;
@@ -140,65 +143,18 @@
         }
     });
 
-document.getElementById('submitBtn').addEventListener('click', function() {
-    const start = document.getElementById('start').value;
-    const destination = document.getElementById('destination').value;
-    const selectedItems = [];
-    if (document.getElementById('carbon').checked) selectedItems.push('節能');
-    if (document.getElementById('time').checked) selectedItems.push('省時');
-    if (document.getElementById('distance').checked) selectedItems.push('最短距離');
-    const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        const start = document.getElementById('start').value;
+        const destination = document.getElementById('destination').value;
+        const selectedItems = [];
+        if (document.getElementById('carbon').checked) selectedItems.push('節能');
+        if (document.getElementById('time').checked) selectedItems.push('省時');
+        if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
-    resultText.innerHTML = `出發點: ${start} <br> 目的地: ${destination} <br> 檢測點: ${checkpoints.join(', ')} <br> 顯示項目: ${selectedItems.join(', ')}`;
-    resultDiv.style.display = 'block';
-
-    const weights = {
-        emissions: document.getElementById('carbon').checked ? 1 : 0,
-        time: document.getElementById('time').checked ? 1 : 0,
-        distance: document.getElementById('distance').checked ? 1 : 0
-    };
-
-    const requestData = {
-        start_point: start,
-        end_point: destination,
-        checkpoints: checkpoints,
-        weights: weights
-    };
-
-    fetch('https://carbon123-fcada6ecf315.herokuapp.com/submit', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            resultText.innerHTML += `<br><strong>錯誤:</strong> ${data.error}`;
-        } else {
-            let output = "<strong>最佳路徑:</strong><br>";
-            data.forEach(route => {
-                output += `
-                    交通方式: ${route.mode} <br>
-                    碳排放: ${route.emissions} g CO2 <br>
-                    時間: ${route.duration} 秒 <br>
-                    距離: ${route.distance} 米 <br>
-                    <br>
-                `;
-            });
-            resultText.innerHTML += output;
-        }
-    })
-    .catch(error => {
-        console.error('錯誤:', error);
-        resultText.innerHTML += `<br><strong>錯誤:</strong> 無法獲取路線資料`;
-    });
-});
-
-
-        // 地圖顯示邏輯（這裡為示範）
-        document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
+        resultText.innerHTML = `出發點: ${start} <br> 目的地: ${destination} <br> 檢測點: ${checkpoints.join(', ')} <br> 顯示項目: ${selectedItems.join(', ')}`;
+        resultDiv.style.display = 'block';
+        mapContainer.style.display = 'block';
     });
 </script>
 
