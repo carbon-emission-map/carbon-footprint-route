@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>  
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,7 @@
             color: #333;
             min-height: 50px;
             margin-top: 10px;
-            display: none;
+            display: none; /* 初始隱藏 */
         }
         #map {
             width: 100%;
@@ -155,6 +155,9 @@
         resultText.innerHTML = `出發點: ${start} <br> 目的地: ${destination} <br> 檢測點: ${checkpoints.join(', ')} <br> 顯示項目: ${selectedItems.join(', ')}`;
         resultDiv.style.display = 'block';
         mapContainer.style.display = 'block';
+
+        // 地圖顯示邏輯（這裡為示範）
+        document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
     });
 </script>
 
