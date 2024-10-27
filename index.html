@@ -159,6 +159,104 @@
         // 地圖顯示邏輯（這裡為示範）
         document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
     });
+    document.getElementById('submitBtn').addEventListener('click', function() {
+    const start = document.getElementById('start').value;
+    const destination = document.getElementById('destination').value;
+    const selectedItems = [];
+    if (document.getElementById('carbon').checked) selectedItems.push('節能');
+    if (document.getElementById('time').checked) selectedItems.push('省時');
+    if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+    const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+
+    // 發送 AJAX 請求到後端
+    fetch('https://calm-cove-01291-ecc713083951.herokuapp.com/api/route', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            start: start,
+            end: destination,
+            checkpoints: checkpoints,
+            weights: {
+                emissions: 0.3,
+                time: 0.4,
+                distance: 0.3
+            }
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultText.innerHTML = `錯誤: ${data.error}`;
+        } else {
+            // 顯示結果
+            resultText.innerHTML = JSON.stringify(data.results, null, 2);
+            resultDiv.style.display = 'block';
+
+            // 假設你想要將地圖嵌入到網頁中
+            const mapFrame = document.createElement('iframe');
+            mapFrame.src = 'map.html';  // 使用返回的地圖網址，或使用其他方法顯示地圖
+            mapFrame.width = '100%';
+            mapFrame.height = '400px';
+            document.getElementById('map').innerHTML = ''; // 清空之前的內容
+            document.getElementById('map').appendChild(mapFrame);
+        }
+    })
+    .catch(error => {
+        resultText.innerHTML = `請求失敗: ${error}`;
+    });
+});
+
+document.getElementById('submitBtn').addEventListener('click', function() {
+    const start = document.getElementById('start').value;
+    const destination = document.getElementById('destination').value;
+    const selectedItems = [];
+    if (document.getElementById('carbon').checked) selectedItems.push('節能');
+    if (document.getElementById('time').checked) selectedItems.push('省時');
+    if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+    const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+
+    // 發送 AJAX 請求到後端
+    fetch('https://calm-cove-01291-ecc713083951.herokuapp.com/api/route', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            start: start,
+            end: destination,
+            checkpoints: checkpoints,
+            weights: {
+                emissions: 0.3,
+                time: 0.4,
+                distance: 0.3
+            }
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultText.innerHTML = `錯誤: ${data.error}`;
+        } else {
+            // 顯示結果
+            resultText.innerHTML = JSON.stringify(data.results, null, 2);
+            resultDiv.style.display = 'block';
+
+            // 假設你想要將地圖嵌入到網頁中
+            const mapFrame = document.createElement('iframe');
+            mapFrame.src = 'map.html';  // 使用返回的地圖網址，或使用其他方法顯示地圖
+            mapFrame.width = '100%';
+            mapFrame.height = '400px';
+            document.getElementById('map').innerHTML = ''; // 清空之前的內容
+            document.getElementById('map').appendChild(mapFrame);
+        }
+    })
+    .catch(error => {
+        resultText.innerHTML = `請求失敗: ${error}`;
+    });
+});
+
 </script>
 
 </body>
