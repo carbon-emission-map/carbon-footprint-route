@@ -140,78 +140,62 @@
         }
     });
 
-    document.getElementById('submitBtn').addEventListener('click', function() {
-        const start = document.getElementById('start').value;
-        const destination = document.getElementById('destination').value;
+document.getElementById('submitBtn').addEventListener('click', function() {
+    const start = document.getElementById('start').value;
+    const destination = document.getElementById('destination').value;
+    const selectedItems = [];
+    if (document.getElementById('carbon').checked) selectedItems.push('節能');
+    if (document.getElementById('time').checked) selectedItems.push('省時');
+    if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+    const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
-        // 取得使用者勾選的顯示項目
-        const selectedItems = [];
-        if (document.getElementById('carbon').checked) selectedItems.push('節能');
-        if (document.getElementById('time').checked) selectedItems.push('省時');
-        if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+    resultText.innerHTML = `出發點: ${start} <br> 目的地: ${destination} <br> 檢測點: ${checkpoints.join(', ')} <br> 顯示項目: ${selectedItems.join(', ')}`;
+    resultDiv.style.display = 'block';
 
-        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+    const weights = {
+        emissions: document.getElementById('carbon').checked ? 1 : 0,
+        time: document.getElementById('time').checked ? 1 : 0,
+        distance: document.getElementById('distance').checked ? 1 : 0
+    };
 
-        // 更新結果顯示
-        resultText.innerHTML = `出發點: ${start} <br> 目的地: ${destination} <br> 檢測點: ${checkpoints.join(', ')} <br> 顯示項目: ${selectedItems.join(', ')}`;
-        resultDiv.style.display = 'block';
+    const requestData = {
+        start_point: start,
+        end_point: destination,
+        checkpoints: checkpoints,
+        weights: weights
+    };
 
-        // 發送 AJAX 請求
-        const weights = {
-            emissions: document.getElementById('carbon').checked ? 1 : 0,
-            time: document.getElementById('time').checked ? 1 : 0,
-            distance: document.getElementById('distance').checked ? 1 : 0
-        };
-
-        const requestData = {
-            start_point: start,
-            end_point: destination,
-            checkpoints: checkpoints,
-            weights: weights
-        };
-
-        fetch('https://calm-cove-01291-ecc713083951.herokuapp.com/submit', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                start: '起點',
-        destination: '終點',
-        checkpoints: ['檢測點1', '檢測點2']
+    fetch('https://carbon123-fcada6ecf315.herokuapp.com/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
     })
-})
-.then(response => response.json())
-.then(data => {
-    console.log('成功:', data);
-})
-.catch((error) => {
-    console.error('錯誤:', error);
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultText.innerHTML += `<br><strong>錯誤:</strong> ${data.error}`;
+        } else {
+            let output = "<strong>最佳路徑:</strong><br>";
+            data.forEach(route => {
+                output += `
+                    交通方式: ${route.mode} <br>
+                    碳排放: ${route.emissions} g CO2 <br>
+                    時間: ${route.duration} 秒 <br>
+                    距離: ${route.distance} 米 <br>
+                    <br>
+                `;
+            });
+            resultText.innerHTML += output;
+        }
+    })
+    .catch(error => {
+        console.error('錯誤:', error);
+        resultText.innerHTML += `<br><strong>錯誤:</strong> 無法獲取路線資料`;
+    });
 });
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                resultText.innerHTML += `<br><strong>錯誤:</strong> ${data.error}`;
-            } else {
-                // 在這裡顯示回傳的結果
-                let output = "<strong>最佳路徑:</strong><br>";
-                data.forEach(route => {
-                    output += `
-                        交通方式: ${route.mode} <br>
-                        碳排放: ${route.emissions} g CO2 <br>
-                        時間: ${route.duration} 秒 <br>
-                        距離: ${route.distance} 米 <br>
-                        <br>
-                    `;
-                });
-                resultText.innerHTML += output;
-            }
-        })
-        .catch(error => {
-            console.error('錯誤:', error);
-            resultText.innerHTML += `<br><strong>錯誤:</strong> 無法獲取路線資料`;
-        });
+
 
         // 地圖顯示邏輯（這裡為示範）
         document.getElementById('map').innerHTML = `<p>這裡顯示地圖結果：出發點為 "${start}"，目的地為 "${destination}"，檢測點為 "${checkpoints.join(', ')}"。</p>`;
