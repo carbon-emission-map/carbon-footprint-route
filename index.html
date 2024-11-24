@@ -157,33 +157,54 @@
 
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' 
+                     'Cache-Control': 'no-cache'
+            },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();  // 解析為 JSON
+})
         .then(data => {
-            if (data.error) {
-                resultText.textContent = `錯誤: ${data.error}`;
-            } else {
-                resultText.innerHTML = `
-                    起點: ${data.start}<br>
-                    目的地: ${data.destination}<br>
-                    最佳路線: ${data.best_route.join(' -> ')}
-                `;
+            console.log(data); // 檢查伺服器回傳的完整資料
+            // === 驗證資料結構 ===
+    if (!data || data.error) {
+        resultText.innerHTML = `錯誤: ${data.error || "伺服器回傳資料不正確"}`;
+        resultDiv.style.display = 'block';
+        return;
+    }
+    
+    // 檢查關鍵欄位是否存在
+    if (!data.coordinates || !Array.isArray(data.coordinates) || data.coordinates.length === 0) {
+        resultText.innerHTML = `錯誤: 路徑座標資訊缺失`;
+        resultDiv.style.display = 'block';
+        return;
+    }
 
-                map.eachLayer(layer => { if (layer._url === undefined) map.removeLayer(layer); });
+    // === 處理有效資料 ===
+    resultText.innerHTML = `
+        起點: ${data.start ? data.start : '未提供'}<br>
+        目的地: ${data.destination ? data.destination : '未提供'}<br>
+        最佳路線: ${data.best_route ? data.best_route.join(' -> ') : '無路線資料'}
+    `;
+    resultDiv.style.display = 'block';
 
-                const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]);
-                L.polyline(routeCoords, { color: 'blue' }).addTo(map);
-                map.fitBounds(routeCoords);
-            }
-            resultDiv.style.display = 'block';
-        })
-        .catch(error => {
-            resultText.textContent = `發生錯誤: ${error.message}`;
-            resultDiv.style.display = 'block';
-        });
+    // 更新地圖
+    const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]); // 提取座標陣列
+    map.eachLayer(layer => { 
+        if (layer._url === undefined) map.removeLayer(layer); // 清理舊的路線
     });
+    L.polyline(routeCoords, { color: 'blue' }).addTo(map); // 繪製路線
+    map.fitBounds(routeCoords); // 調整地圖範圍
+})
+.catch(error => {
+    resultText.innerHTML = `發生錯誤: ${error.message}`;
+    resultDiv.style.display = 'block';
+});
+        
 </script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
