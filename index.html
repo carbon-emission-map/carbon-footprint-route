@@ -179,40 +179,47 @@
         };
 
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Cache-Control': 'no-cache'  // 禁用缓存
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())  // 解析為 JSON
-        .then(data => {
-            console.log(data);  // 打印返回的數據
-            if (data.error) {
-                resultText.innerHTML = `錯誤: ${data.error}`;
-            } else if (data.results && data.results.steps) {
-                console.log(data.results);  // 打印路線結果
-                const steps = data.results.steps.map(step => `<li>${step}</li>`).join('');
-                resultText.innerHTML = `<ul>${steps}</ul>`;
-                resultDiv.style.display = 'block';
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json', 
+        'Cache-Control': 'no-cache'  // 禁用缓存
+    },
+    body: JSON.stringify(data)
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();  // 解析為 JSON
+})
+.then(data => {
+    console.log(data);  // 打印返回的數據
+    if (data.error) {
+        resultText.innerHTML = `錯誤: ${data.error}`;
+    } else if (data.results && data.results.steps) {
+        console.log(data.results);  // 打印路線結果
+        const steps = data.results.steps.map(step => `<li>${step}</li>`).join('');
+        resultText.innerHTML = `<ul>${steps}</ul>`;
+        resultDiv.style.display = 'block';
 
-                const map = L.map('map').setView([data.results.startLat, data.results.startLng], 13);
+        const map = L.map('map').setView([data.results.startLat, data.results.startLng], 13);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                const route = L.polyline(data.results.path, { color: 'blue' }).addTo(map);
-                map.fitBounds(route.getBounds());
-                mapContainer.style.display = 'block';
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const route = L.polyline(data.results.path, { color: 'blue' }).addTo(map);
+        map.fitBounds(route.getBounds());
+        mapContainer.style.display = 'block';
 
-                htmlResultDiv.innerHTML = `<iframe src="data:text/html;charset=utf-8,${encodeURIComponent(data.results.html)}" width="100%" height="500px"></iframe>`;
-                htmlResultContainer.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            resultText.innerHTML = `錯誤: ${error.message}`;
-            resultDiv.style.display = 'block';
-        });
-    });
+        htmlResultDiv.innerHTML = `<iframe src="data:text/html;charset=utf-8,${encodeURIComponent(data.results.html)}" width="100%" height="500px"></iframe>`;
+        htmlResultContainer.style.display = 'block';
+    }
+})
+.catch(error => {
+    console.error("Error:", error);
+    resultText.innerHTML = `錯誤: ${error.message}`;
+    resultDiv.style.display = 'block';
+});
+
+   
 </script>
 
 <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
