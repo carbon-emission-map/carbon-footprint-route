@@ -24,7 +24,7 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .result, .map-container {
+        .result, .map-container, .html-result-container {
             padding: 10px;
             background-color: #e9ffe9;
             border: 1px solid #b5ffb5;
@@ -33,7 +33,7 @@
             color: #333;
             min-height: 50px;
             margin-top: 10px;
-            display: none; /* 初始隱藏 */
+            display: none;
         }
         #map {
             width: 100%;
@@ -75,6 +75,10 @@
             <input class="form-check-input" type="checkbox" id="distance" value="最短距離">
             <label class="form-check-label" for="distance">最短距離</label>
         </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="average" value="平均">
+            <label class="form-check-label" for="average">平均</label>
+        </div>
     </div>
 
     <div class="form-group">
@@ -109,6 +113,12 @@
         <h2>地圖結果：</h2>
         <div id="map"></div>
     </div>
+
+    <!-- HTML 圖檔方框 -->
+    <div class="html-result-container" id="htmlResultContainer">
+        <h2>路線圖檔：</h2>
+        <div id="htmlResult"></div>
+    </div>
 </div>
 
 <script>
@@ -117,6 +127,8 @@
     const resultDiv = document.getElementById('result');
     const resultText = document.getElementById('resultText');
     const mapContainer = document.querySelector('.map-container');
+    const htmlResultContainer = document.getElementById('htmlResultContainer');
+    const htmlResultDiv = document.getElementById('htmlResult');
 
     const locations = [
         "選擇一個檢測點", "梧棲", "高美濕地", "台中國際機場", "台中港", "港區藝術中心", 
@@ -132,7 +144,6 @@
         for (let i = 0; i < num; i++) {
             const select = document.createElement('select');
             select.className = 'form-control mb-2';
-            select.placeholder = '檢測點 ' + (i + 1);
             locations.forEach((location) => {
                 const option = document.createElement('option');
                 option.value = location;
@@ -143,56 +154,53 @@
         }
     });
 
-   
-document.getElementById('submitBtn').addEventListener('click', function() {
-    const start = document.getElementById('start').value;
-    const destination = document.getElementById('destination').value;
-    const selectedItems = [];
-    if (document.getElementById('carbon').checked) selectedItems.push('節能');
-    if (document.getElementById('time').checked) selectedItems.push('省時');
-    if (document.getElementById('distance').checked) selectedItems.push('最短距離');
-    const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        const start = document.getElementById('start').value;
+        const destination = document.getElementById('destination').value;
+        const selectedItems = [];
+        if (document.getElementById('carbon').checked) selectedItems.push('節能');
+        if (document.getElementById('time').checked) selectedItems.push('省時');
+        if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+        if (document.getElementById('average').checked) selectedItems.push('平均');
+        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
-    // 發送 AJAX 請求到後端
-    fetch('https://calm-cove-01291-ecc713083951.herokuapp.com/api/route', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            start: start,
-            end: destination,
-            checkpoints: checkpoints,
-            weights: {
-                emissions: 0.3,
-                time: 0.4,
-                distance: 0.3
+        // 發送 API 請求到後端地址
+        fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                start: start,
+                end: destination,
+                checkpoints: checkpoints,
+                weights: {
+                    emissions: selectedItems.includes('節能') ? 0.5 : 0.25,
+                    time: selectedItems.includes('省時') ? 0.5 : 0.25,
+                    distance: selectedItems.includes('最短距離') ? 0.5 : 0.25,
+                    average: selectedItems.includes('平均') ? 0.25 : 0
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultText.innerHTML = `錯誤: ${data.error}`;
+            } else {
+                resultText.innerHTML = JSON.stringify(data.results, null, 2);
+                resultDiv.style.display = 'block';
+
+                // 顯示 HTML 圖檔
+                if (data.htmlFileUrl) {
+                    htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
+                    htmlResultContainer.style.display = 'block';
+                }
             }
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            resultText.innerHTML = `錯誤: ${data.error}`;
-        } else {
-            // 顯示結果
-            resultText.innerHTML = JSON.stringify(data.results, null, 2);
-            resultDiv.style.display = 'block';
-
-            // 假設你想要將地圖嵌入到網頁中
-            const mapFrame = document.createElement('iframe');
-            mapFrame.src = 'map.html';  // 使用返回的地圖網址，或使用其他方法顯示地圖
-            mapFrame.width = '100%';
-            mapFrame.height = '400px';
-            document.getElementById('map').innerHTML = ''; // 清空之前的內容
-            document.getElementById('map').appendChild(mapFrame);
-        }
-    })
-    .catch(error => {
-        resultText.innerHTML = `請求失敗: ${error}`;
+        .catch(error => {
+            resultText.innerHTML = `請求失敗: ${error}`;
+        });
     });
-});
-
 </script>
 
 </body>
