@@ -200,14 +200,15 @@
             console.log(data.best_route);  // 打印路線結果
 
             resultText.innerHTML = `
-                起點: ${data.start}<br>
-                目的地: ${data.end}<br>
-                最佳路線: ${data.best_route}<br>
-                路線詳細資料: ${JSON.stringify(data.details, null, 2)}
-            `;
-        }
-        resultDiv.style.display = 'block';
-    })
+            起點: ${data.start ? data.start : '未提供'}<br>
+            目的地: ${data.end ? data.end : '未提供'}<br>
+            最佳路線: ${data.best_route ? data.best_route : '無路線資料'}<br>
+            路線詳細資料: ${JSON.stringify(data.details ? data.details : {}, null, 2)}
+        `;
+    }
+    resultDiv.style.display = 'block';
+})
+           
     .catch(error => {
         resultText.innerHTML = `發生錯誤: ${error.message}`;
         resultDiv.style.display = 'block';
