@@ -178,7 +178,7 @@
                 }
         };
 
-        fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
+       fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
     method: 'POST',
     headers: { 
         'Content-Type': 'application/json', 
@@ -196,16 +196,20 @@
     console.log(data);  // 打印返回的數據
     if (data.error) {
         resultText.innerHTML = `錯誤: ${data.error}`;
-    } else if (data.results && data.results.steps) {
-        console.log(data.results);  // 打印路線結果
-        const steps = data.results.steps.map(step => `<li>${step}</li>`).join('');
-        resultText.innerHTML = `<ul>${steps}</ul>`;
+    } else if (data.best_route) {
+        console.log(data.best_route);  // 打印路線結果
+
+        // 假設 best_route 是一個包含路徑步驟的陣列
+        const bestRouteSteps = data.best_route.map((step, index) => `<li>步驟 ${index + 1}: ${step}</li>`).join('');
+        
+        resultText.innerHTML = `<ul>${bestRouteSteps}</ul>`;
         resultDiv.style.display = 'block';
 
+        // 假設這裡你也需要繪製地圖
         const map = L.map('map').setView([data.results.startLat, data.results.startLng], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const route = L.polyline(data.results.path, { color: 'blue' }).addTo(map);
+        const route = L.polyline(data.best_route, { color: 'blue' }).addTo(map);
         map.fitBounds(route.getBounds());
         mapContainer.style.display = 'block';
 
