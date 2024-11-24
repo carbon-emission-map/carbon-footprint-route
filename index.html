@@ -181,6 +181,8 @@
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+             'Cache-Control': 'no-cache'  // 禁用缓存
+            },
             body: JSON.stringify(data)
         })
         .then(data => {
