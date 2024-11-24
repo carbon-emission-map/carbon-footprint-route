@@ -134,23 +134,24 @@
         "第二市場", "火車站", "國軍英雄館", "台中公園"
     ];
 
-    checkpointsNum.addEventListener('change', function() {
-        const num = this.value;
-        checkpointsDiv.innerHTML = '';
-        
-        for (let i = 0; i < num; i++) {
-            const select = document.createElement('select');
-            select.className = 'form-control mb-2';
-            locations.forEach((location) => {
-                const option = document.createElement('option');
-                option.value = location;
-                option.textContent = location;
-                select.appendChild(option);
-            });
-            checkpointsDiv.appendChild(select);
-        }
-    });
+    // 每當檢測點數量變更時，根據選擇的數量動態顯示相應的選擇框
+checkpointsNum.addEventListener('change', function() {
+    const num = this.value;
+    checkpointsDiv.innerHTML = '';  // 清空現有的選擇框
 
+    // 根據選擇的檢測點數量動態生成對應的選擇框
+    for (let i = 0; i < num; i++) {
+        const select = document.createElement('select');
+        select.className = 'form-control mb-2';  // 設定樣式
+        locations.forEach((location) => {
+            const option = document.createElement('option');
+            option.value = location;
+            option.textContent = location;
+            select.appendChild(option);
+        });
+        checkpointsDiv.appendChild(select);  // 添加選擇框到 div 中
+    }
+});
     document.getElementById('submitBtn').addEventListener('click', function() {
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
