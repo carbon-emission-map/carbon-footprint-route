@@ -180,51 +180,42 @@
 
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-             'Cache-Control': 'no-cache'  // 禁用缓存
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Cache-Control': 'no-cache'  // 禁用缓存
             },
             body: JSON.stringify(data)
         })
+        .then(response => response.json())  // 解析為 JSON
         .then(data => {
-    console.log(data);  // 打印返回的數據
-    if (data.error) {
-        resultText.innerHTML = `錯誤: ${data.error}`;
-    } else if (data.results && data.results.steps) {
-        console.log(data.results);  // 打印路線結果
-        const steps = data.results.steps.map(
-            step => `${step.mode} 從 ${step.from} 到 ${step.to}，耗時 ${step.time} 分鐘，碳排放 ${step.emissions}`
-        ).join('<br>');
-        resultText.innerHTML = `
-            <strong>推薦路線：</strong><br>${steps}<br>
-            <strong>總耗時：</strong> ${data.results.total_time} 分鐘<br>
-            <strong>總碳排放：</strong> ${data.results.total_emissions} 公斤
-        `;
+            console.log(data);  // 打印返回的數據
+            if (data.error) {
+                resultText.innerHTML = `錯誤: ${data.error}`;
+            } else if (data.results && data.results.steps) {
+                console.log(data.results);  // 打印路線結果
+                const steps = data.results.steps.map(step => `<li>${step}</li>`).join('');
+                resultText.innerHTML = `<ul>${steps}</ul>`;
+                resultDiv.style.display = 'block';
 
-        if (data.htmlFileUrl) {
-            htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
-            htmlResultContainer.style.display = 'block';
-        }
-        resultDiv.style.display = 'block';
-    }
-}
-        // 假設 data.routes 包含路線的座標
-if (data.routes && data.routes.length > 0) {
-    const map = L.map('map').setView([data.routes[0].lat, data.routes[0].lng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                const map = L.map('map').setView([data.results.startLat, data.results.startLng], 13);
 
-    // 你可以將路線添加到地圖上
-    const route = L.polyline(data.routes.map(route => [route.lat, route.lng]), { color: 'blue' }).addTo(map);
-    map.fitBounds(route.getBounds());
-}
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                const route = L.polyline(data.results.path, { color: 'blue' }).addTo(map);
+                map.fitBounds(route.getBounds());
+                mapContainer.style.display = 'block';
 
-    }
-})
-
+                htmlResultDiv.innerHTML = `<iframe src="data:text/html;charset=utf-8,${encodeURIComponent(data.results.html)}" width="100%" height="500px"></iframe>`;
+                htmlResultContainer.style.display = 'block';
+            }
+        })
         .catch(error => {
-            resultText.innerHTML = `請求失敗: ${error.message || error}`;
-            console.error('請求失敗:', error);
+            resultText.innerHTML = `錯誤: ${error.message}`;
+            resultDiv.style.display = 'block';
         });
     });
 </script>
+
+<script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
+
 </body>
 </html>
