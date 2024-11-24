@@ -184,10 +184,11 @@
             body: JSON.stringify(data)
         })
         .then(data => {
-    console.log(data);  // 打印回應數據
+    console.log(data);  // 打印返回的數據
     if (data.error) {
         resultText.innerHTML = `錯誤: ${data.error}`;
     } else if (data.results && data.results.steps) {
+        console.log(data.results);  // 打印路線結果
         const steps = data.results.steps.map(
             step => `${step.mode} 從 ${step.from} 到 ${step.to}，耗時 ${step.time} 分鐘，碳排放 ${step.emissions}`
         ).join('<br>');
@@ -196,12 +197,14 @@
             <strong>總耗時：</strong> ${data.results.total_time} 分鐘<br>
             <strong>總碳排放：</strong> ${data.results.total_emissions} 公斤
         `;
-        
+
         if (data.htmlFileUrl) {
             htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
             htmlResultContainer.style.display = 'block';
         }
         resultDiv.style.display = 'block';
+    }
+}
         // 假設 data.routes 包含路線的座標
 if (data.routes && data.routes.length > 0) {
     const map = L.map('map').setView([data.routes[0].lat, data.routes[0].lng], 13);
