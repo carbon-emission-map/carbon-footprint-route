@@ -122,37 +122,37 @@
 <script>
     const map = L.map('map').setView([25.034, 121.564], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+
     const checkpointsNum = document.getElementById('checkpointsNum');
     const checkpointsDiv = document.getElementById('checkpointsDiv');
     const resultDiv = document.getElementById('result');
     const resultText = document.getElementById('resultText');
 
     const locations = [
-        "選擇一個檢測點", "梧棲", "高美濕地", "台中國際機場", "台中港", "港區藝術中心", 
-        "清水車站", "大甲車站", "靜宜大學", "弘光科技大學", "東海大學", 
-        "澄清醫院", "秋紅谷", "市政府", "科博館", "茄苳腳", 
+        "選擇一個檢測點", "梧棲", "高美濕地", "台中國際機場", "台中港", "港區藝術中心",
+        "清水車站", "大甲車站", "靜宜大學", "弘光科技大學", "東海大學",
+        "澄清醫院", "秋紅谷", "市政府", "科博館", "茄苳腳",
         "第二市場", "火車站", "國軍英雄館", "台中公園"
     ];
 
-    // 每當檢測點數量變更時，根據選擇的數量動態顯示相應的選擇框
-checkpointsNum.addEventListener('change', function() {
-    const num = this.value;
-    checkpointsDiv.innerHTML = '';  // 清空現有的選擇框
+    checkpointsNum.addEventListener('change', function () {
+        const num = this.value;
+        checkpointsDiv.innerHTML = '';  // 清空現有的選擇框
 
-    // 根據選擇的檢測點數量動態生成對應的選擇框
-    for (let i = 0; i < num; i++) {
-        const select = document.createElement('select');
-        select.className = 'form-control mb-2';  // 設定樣式
-        locations.forEach((location) => {
-            const option = document.createElement('option');
-            option.value = location;
-            option.textContent = location;
-            select.appendChild(option);
-        });
-        checkpointsDiv.appendChild(select);  // 添加選擇框到 div 中
-    }
-});
-    document.getElementById('submitBtn').addEventListener('click', function() {
+        for (let i = 0; i < num; i++) {
+            const select = document.createElement('select');
+            select.className = 'form-control mb-2';
+            locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                select.appendChild(option);
+            });
+            checkpointsDiv.appendChild(select);
+        }
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function () {
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
@@ -160,57 +160,51 @@ checkpointsNum.addEventListener('change', function() {
 
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 
-                     'Cache-Control': 'no-cache'
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
             },
             body: JSON.stringify(data)
         })
-        .then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();  // 解析為 JSON
-})
-        .then(data => {
-            console.log(data); // 檢查伺服器回傳的完整資料
-            // === 驗證資料結構 ===
-    if (!data || data.error) {
-        resultText.innerHTML = `錯誤: ${data.error || "伺服器回傳資料不正確"}`;
-        resultDiv.style.display = 'block';
-        return;
-    }
-    
-    // 檢查關鍵欄位是否存在
-    if (!data.coordinates || !Array.isArray(data.coordinates) || data.coordinates.length === 0) {
-        resultText.innerHTML = `錯誤: 路徑座標資訊缺失`;
-        resultDiv.style.display = 'block';
-        return;
-    }
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data || data.error) {
+                    resultText.innerHTML = `錯誤: ${data.error || "伺服器回傳資料不正確"}`;
+                    resultDiv.style.display = 'block';
+                    return;
+                }
 
-    // === 處理有效資料 ===
-    resultText.innerHTML = `
-        起點: ${data.start ? data.start : '未提供'}<br>
-        目的地: ${data.destination ? data.destination : '未提供'}<br>
-        最佳路線: ${data.best_route ? data.best_route.join(' -> ') : '無路線資料'}
-    `;
-    resultDiv.style.display = 'block';
+                if (!data.coordinates || !Array.isArray(data.coordinates) || data.coordinates.length === 0) {
+                    resultText.innerHTML = `錯誤: 路徑座標資訊缺失`;
+                    resultDiv.style.display = 'block';
+                    return;
+                }
 
-    // 更新地圖
-    const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]); // 提取座標陣列
-    map.eachLayer(layer => { 
-        if (layer._url === undefined) map.removeLayer(layer); // 清理舊的路線
+                resultText.innerHTML = `
+                    起點: ${data.start ? data.start : '未提供'}<br>
+                    目的地: ${data.destination ? data.destination : '未提供'}<br>
+                    最佳路線: ${data.best_route ? data.best_route.join(' -> ') : '無路線資料'}
+                `;
+                resultDiv.style.display = 'block';
+
+                const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]);
+                map.eachLayer(layer => {
+                    if (layer._url === undefined) map.removeLayer(layer);
+                });
+                L.polyline(routeCoords, { color: 'blue' }).addTo(map);
+                map.fitBounds(routeCoords);
+            })
+            .catch(error => {
+                resultText.innerHTML = `查詢錯誤: ${error.message}`;
+                resultDiv.style.display = 'block';
+            });
     });
-    L.polyline(routeCoords, { color: 'blue' }).addTo(map); // 繪製路線
-    map.fitBounds(routeCoords); // 調整地圖範圍
-})
-.catch(error => {
-    resultText.innerHTML = `發生錯誤: ${error.message}`;
-    resultDiv.style.display = 'block';
-});
-        
 </script>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 </html>
