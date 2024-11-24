@@ -193,13 +193,14 @@
         return response.json();  // 解析為 JSON
     })
     .then(data => {
-        console.log(data);  // 打印返回的數據
-        if (data.error) {
-            resultText.innerHTML = `錯誤: ${data.error}`;
-        } else if (data.best_route) {
-            console.log(data.best_route);  // 打印路線結果
+    console.log(data);  // 打印返回的數據，檢查數據結構
+    if (data.error) {
+        resultText.innerHTML = `錯誤: ${data.error}`;
+    } else if (data.best_route) {
+        console.log(data.best_route);  // 打印路線結果
 
-            resultText.innerHTML = `
+        // 檢查 start 和 end 是否存在於返回的資料中
+        resultText.innerHTML = `
             起點: ${data.start ? data.start : '未提供'}<br>
             目的地: ${data.end ? data.end : '未提供'}<br>
             最佳路線: ${data.best_route ? data.best_route : '無路線資料'}<br>
@@ -208,6 +209,7 @@
     }
     resultDiv.style.display = 'block';
 })
+
            
     .catch(error => {
         resultText.innerHTML = `發生錯誤: ${error.message}`;
