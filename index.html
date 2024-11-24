@@ -6,6 +6,7 @@
     <title>碳足跡路線查詢</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         body {
             background: linear-gradient(to bottom, #B2E0F2, #A1C6E7);
@@ -109,26 +110,20 @@
     </div>
 
     <!-- 地圖方框 -->
-    <div class="map-container">
+    <div class="map-container" style="display:block;">
         <h2>地圖結果：</h2>
         <div id="map"></div>
     </div>
-
-    <!-- HTML 圖檔方框 -->
-    <div class="html-result-container" id="htmlResultContainer">
-        <h2>路線圖檔：</h2>
-        <div id="htmlResult"></div>
-    </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    const map = L.map('map').setView([25.034, 121.564], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
     const checkpointsNum = document.getElementById('checkpointsNum');
     const checkpointsDiv = document.getElementById('checkpointsDiv');
     const resultDiv = document.getElementById('result');
     const resultText = document.getElementById('resultText');
-    const mapContainer = document.querySelector('.map-container');
-    const htmlResultContainer = document.getElementById('htmlResultContainer');
-    const htmlResultDiv = document.getElementById('htmlResult');
 
     const locations = [
         "選擇一個檢測點", "梧棲", "高美濕地", "台中國際機場", "台中港", "港區藝術中心", 
@@ -157,67 +152,39 @@
     document.getElementById('submitBtn').addEventListener('click', function() {
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
-        const selectedItems = [];
-        if (document.getElementById('carbon').checked) selectedItems.push('節能');
-        if (document.getElementById('time').checked) selectedItems.push('省時');
-        if (document.getElementById('distance').checked) selectedItems.push('最短距離');
-        if (document.getElementById('average').checked) selectedItems.push('平均');
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+        const data = { start, destination, checkpoints: checkpoints.filter(c => c !== "選擇一個檢測點") };
 
-        const data = {
-            start: start,
-            end: destination,
-            checkpoints: checkpoints.filter(loc => loc !== "選擇一個檢測點"),
-            weights: selectedItems.includes('平均') 
-                ? { emissions: 0.25, time: 0.25, distance: 0.25, average: 0.25 }
-                : {
-                    emissions: selectedItems.includes('節能') ? 0.5 : 0.25,
-                    time: selectedItems.includes('省時') ? 0.5 : 0.25,
-                    distance: selectedItems.includes('最短距離') ? 0.5 : 0.25,
-                    average: 0
-                }
-        };
+        fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultText.textContent = `錯誤: ${data.error}`;
+            } else {
+                resultText.innerHTML = `
+                    起點: ${data.start}<br>
+                    目的地: ${data.destination}<br>
+                    最佳路線: ${data.best_route.join(' -> ')}
+                `;
 
-       fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json', 
-            'Cache-Control': 'no-cache'  // 禁用缓存
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();  // 解析為 JSON
-    })
-    .then(data => {
-    console.log(data);  // 打印返回的數據，檢查數據結構
-    if (data.error) {
-        resultText.innerHTML = `錯誤: ${data.error}`;
-    } else if (data.best_route) {
-        console.log(data.best_route);  // 打印路線結果
+                map.eachLayer(layer => { if (layer._url === undefined) map.removeLayer(layer); });
 
-        // 檢查 start 和 end 是否存在於返回的資料中
-        resultText.innerHTML = `
-            起點: ${data.start ? data.start : '未提供'}<br>
-            目的地: ${data.end ? data.end : '未提供'}<br>
-            最佳路線: ${data.best_route ? data.best_route : '無路線資料'}<br>
-            路線詳細資料: ${JSON.stringify(data.details ? data.details : {}, null, 2)}
-        `;
-    }
-    resultDiv.style.display = 'block';
-})
-
-           
-    .catch(error => {
-        resultText.innerHTML = `發生錯誤: ${error.message}`;
-        resultDiv.style.display = 'block';
+                const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]);
+                L.polyline(routeCoords, { color: 'blue' }).addTo(map);
+                map.fitBounds(routeCoords);
+            }
+            resultDiv.style.display = 'block';
+        })
+        .catch(error => {
+            resultText.textContent = `發生錯誤: ${error.message}`;
+            resultDiv.style.display = 'block';
+        });
     });
-});
 </script>
-
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
