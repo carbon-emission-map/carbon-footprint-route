@@ -155,52 +155,53 @@
     });
 
     document.getElementById('submitBtn').addEventListener('click', function() {
-        const start = document.getElementById('start').value;
-        const destination = document.getElementById('destination').value;
-        const selectedItems = [];
-        if (document.getElementById('carbon').checked) selectedItems.push('節能');
-        if (document.getElementById('time').checked) selectedItems.push('省時');
-        if (document.getElementById('distance').checked) selectedItems.push('最短距離');
-        if (document.getElementById('average').checked) selectedItems.push('平均');
-        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+    const start = document.getElementById('start').value;
+    const destination = document.getElementById('destination').value;
+    const selectedItems = [];
+    if (document.getElementById('carbon').checked) selectedItems.push('節能');
+    if (document.getElementById('time').checked) selectedItems.push('省時');
+    if (document.getElementById('distance').checked) selectedItems.push('最短距離');
+    if (document.getElementById('average').checked) selectedItems.push('平均');
+    const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
-        const data = {
-            start: start,
-            end: destination,
-            checkpoints: checkpoints,
-            weights: {
-                emissions: selectedItems.includes('節能') ? 0.5 : 0.25,
-                time: selectedItems.includes('省時') ? 0.5 : 0.25,
-                distance: selectedItems.includes('最短距離') ? 0.5 : 0.25,
-                average: selectedItems.includes('平均') ? 0.25 : 0
+    // 構建資料物件
+    const data = {
+        start: start,
+        end: destination,
+        checkpoints: checkpoints,
+        weights: {
+            emissions: selectedItems.includes('節能') ? 0.5 : 0.25,
+            time: selectedItems.includes('省時') ? 0.5 : 0.25,
+            distance: selectedItems.includes('最短距離') ? 0.5 : 0.25,
+            average: selectedItems.includes('平均') ? 0.25 : 0
+        }
+    };
+
+    // 發送 API 請求到後端地址
+    fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)  // 正確將資料轉換為 JSON 字符串
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultText.innerHTML = `錯誤: ${data.error}`;
+        } else {
+            resultText.innerHTML = JSON.stringify(data.results, null, 2);
+            resultDiv.style.display = 'block';
+
+            // 顯示 HTML 圖檔
+            if (data.htmlFileUrl) {
+                htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
+                htmlResultContainer.style.display = 'block';
             }
-        };
-
-        // 發送 API 請求到後端地址
-        fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                resultText.innerHTML = `錯誤: ${data.error}`;
-            } else {
-                resultText.innerHTML = JSON.stringify(data.results, null, 2);
-                resultDiv.style.display = 'block';
-
-                // 顯示 HTML 圖檔
-                if (data.htmlFileUrl) {
-                    htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
-                    htmlResultContainer.style.display = 'block';
-                }
-            }
-        })
-        .catch(error => {
-            resultText.innerHTML = `請求失敗: ${error}`;
+        }
+    })
+    .catch(error => {
+        resultText.innerHTML = `請求失敗: ${error}`;
         });
     });
 </script>
