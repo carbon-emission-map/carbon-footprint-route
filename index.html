@@ -167,7 +167,7 @@
         const data = {
             start: start,
             end: destination,
-            checkpoints: checkpoints,
+            checkpoints: checkpoints.filter(loc => loc !== "選擇一個檢測點"),
             weights: selectedItems.includes('平均') 
                 ? { emissions: 0.25, time: 0.25, distance: 0.25, average: 0.25 }
                 : {
@@ -183,11 +183,16 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
                 resultText.innerHTML = `錯誤: ${data.error}`;
-            } else {
+            } else if (data.results && data.results.steps) {
                 const steps = data.results.steps.map(
                     step => `${step.mode} 從 ${step.from} 到 ${step.to}，耗時 ${step.time} 分鐘，碳排放 ${step.emissions}`
                 ).join('<br>');
@@ -210,7 +215,5 @@
         });
     });
 </script>
-
-
 </body>
 </html>
