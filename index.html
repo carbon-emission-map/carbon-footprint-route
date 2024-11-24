@@ -202,6 +202,16 @@
             htmlResultContainer.style.display = 'block';
         }
         resultDiv.style.display = 'block';
+        // 假設 data.routes 包含路線的座標
+if (data.routes && data.routes.length > 0) {
+    const map = L.map('map').setView([data.routes[0].lat, data.routes[0].lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // 你可以將路線添加到地圖上
+    const route = L.polyline(data.routes.map(route => [route.lat, route.lng]), { color: 'blue' }).addTo(map);
+    map.fitBounds(route.getBounds());
+}
+
     }
 })
 
