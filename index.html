@@ -183,32 +183,28 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
         .then(data => {
-            if (data.error) {
-                resultText.innerHTML = `錯誤: ${data.error}`;
-            } else if (data.results && data.results.steps) {
-                const steps = data.results.steps.map(
-                    step => `${step.mode} 從 ${step.from} 到 ${step.to}，耗時 ${step.time} 分鐘，碳排放 ${step.emissions}`
-                ).join('<br>');
-                resultText.innerHTML = `
-                    <strong>推薦路線：</strong><br>${steps}<br>
-                    <strong>總耗時：</strong> ${data.results.total_time} 分鐘<br>
-                    <strong>總碳排放：</strong> ${data.results.total_emissions} 公斤
-                `;
+    console.log(data);  // 打印回應數據
+    if (data.error) {
+        resultText.innerHTML = `錯誤: ${data.error}`;
+    } else if (data.results && data.results.steps) {
+        const steps = data.results.steps.map(
+            step => `${step.mode} 從 ${step.from} 到 ${step.to}，耗時 ${step.time} 分鐘，碳排放 ${step.emissions}`
+        ).join('<br>');
+        resultText.innerHTML = `
+            <strong>推薦路線：</strong><br>${steps}<br>
+            <strong>總耗時：</strong> ${data.results.total_time} 分鐘<br>
+            <strong>總碳排放：</strong> ${data.results.total_emissions} 公斤
+        `;
+        
+        if (data.htmlFileUrl) {
+            htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
+            htmlResultContainer.style.display = 'block';
+        }
+        resultDiv.style.display = 'block';
+    }
+})
 
-                if (data.htmlFileUrl) {
-                    htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
-                    htmlResultContainer.style.display = 'block';
-                }
-                resultDiv.style.display = 'block';
-            }
-        })
         .catch(error => {
             resultText.innerHTML = `請求失敗: ${error.message || error}`;
             console.error('請求失敗:', error);
