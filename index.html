@@ -133,7 +133,7 @@
     ];
 
     checkpointsNum.addEventListener('change', function() {
-        const num = this.value;
+        const num = parseInt(this.value);
         checkpointsDiv.innerHTML = '';
         
         for (let i = 0; i < num; i++) {
