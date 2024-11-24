@@ -165,12 +165,16 @@
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
         // 發送 API 請求到後端地址
-        fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
+        fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
     method: 'POST',
     headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
+    body: JSON.stringify(data)
+}).then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+
         start: start,
         end: destination,
         checkpoints: checkpoints,
