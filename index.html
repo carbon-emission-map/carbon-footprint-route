@@ -17,5 +17,26 @@
   <button id="saveMap">下載地圖</button>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
+
+  fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+    },
+    body: JSON.stringify(data)
+})
+.then(response => response.json())
+.then(data => {
+    if (data.html) {
+        document.getElementById('result').innerHTML = data.html;
+    }
+})
+.catch(error => {
+    console.error('發生錯誤:', error);
+});
+  <div id="result"></div>
+
+
 </body>
 </html>
