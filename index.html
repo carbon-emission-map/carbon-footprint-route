@@ -178,30 +178,38 @@
     };
 
     // 發送 API 請求到後端地址
-    fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)  // 正確將資料轉換為 JSON 字符串
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            resultText.innerHTML = `錯誤: ${data.error}`;
-        } else {
-            resultText.innerHTML = JSON.stringify(data.results, null, 2);
-            resultDiv.style.display = 'block';
+   fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+})
+.then(response => response.json())
+.then(data => {
+    if (data.error) {
+        resultText.innerHTML = `錯誤: ${data.error}`;
+    } else {
+        // 顯示路線結果
+        const steps = data.results.steps.map(
+            step => `${step.mode} 從 ${step.from} 到 ${step.to}，耗時 ${step.time} 分鐘，碳排放 ${step.emissions}`
+        ).join('<br>');
+        resultText.innerHTML = `
+            <strong>推薦路線：</strong><br>${steps}<br>
+            <strong>總耗時：</strong> ${data.results.total_time} 分鐘<br>
+            <strong>總碳排放：</strong> ${data.results.total_emissions} 公斤
+        `;
 
-            // 顯示 HTML 圖檔
-            if (data.htmlFileUrl) {
-                htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
-                htmlResultContainer.style.display = 'block';
-            }
+        // 如果有HTML地圖，顯示
+        if (data.htmlFileUrl) {
+            htmlResultDiv.innerHTML = `<iframe src="${data.htmlFileUrl}" width="100%" height="400px"></iframe>`;
+            htmlResultContainer.style.display = 'block';
         }
-    })
-    .catch(error => {
-        resultText.innerHTML = `請求失敗: ${error}`;
+        resultDiv.style.display = 'block';
+    }
+})
+.catch(error => {
+    resultText.innerHTML = `請求失敗: ${error}`;
+});
+
         });
     });
 </script>
