@@ -160,7 +160,7 @@ checkpointsNum.addEventListener('change', function() {
 
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' 
+            headers: { 'Content-Type': 'application/json', 
                      'Cache-Control': 'no-cache'
             },
             body: JSON.stringify(data)
