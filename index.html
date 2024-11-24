@@ -164,29 +164,26 @@
         if (document.getElementById('average').checked) selectedItems.push('平均');
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
+        const data = {
+            start: start,
+            end: destination,
+            checkpoints: checkpoints,
+            weights: {
+                emissions: selectedItems.includes('節能') ? 0.5 : 0.25,
+                time: selectedItems.includes('省時') ? 0.5 : 0.25,
+                distance: selectedItems.includes('最短距離') ? 0.5 : 0.25,
+                average: selectedItems.includes('平均') ? 0.25 : 0
+            }
+        };
+
         // 發送 API 請求到後端地址
         fetch('https://carbon123-fcada6ecf315.herokuapp.com/api/route', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-}).then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));
-
-        start: start,
-        end: destination,
-        checkpoints: checkpoints,
-        weights: {
-            emissions: selectedItems.includes('節能') ? 0.5 : 0.25,
-            time: selectedItems.includes('省時') ? 0.5 : 0.25,
-            distance: selectedItems.includes('最短距離') ? 0.5 : 0.25,
-            average: selectedItems.includes('平均') ? 0.25 : 0
-        }
-    })
-})
-
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
