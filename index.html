@@ -158,13 +158,19 @@
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
         const data = { start, destination, checkpoints: checkpoints.filter(c => c !== "選擇一個檢測點") };
 
+        const requestData = {
+            start: "起點地址",
+            end: "終點地址",
+            mode: "driving",
+        };
+
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(requestData)
         })
             .then(response => {
                 if (!response.ok) {
