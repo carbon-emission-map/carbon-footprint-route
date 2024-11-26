@@ -153,6 +153,7 @@
     });
 
     document.getElementById('submitBtn').addEventListener('click', function () {
+        const apiUrl = "https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route";
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
