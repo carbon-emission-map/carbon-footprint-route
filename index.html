@@ -49,6 +49,19 @@
             max-height: 500px;
             overflow-y: auto;
         }
+        /* Style for the '推薦模式' section */
+        .recommended-mode-box {
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #b5ffb5;
+        }
+
+        .map-container {
+            width: 100%; /* Ensure map width matches the input form width */
+        }
+
     </style>
 </head>
 <body>
@@ -113,11 +126,18 @@
         <p id="resultText"></p>
     </div>
 
+    </div>
+        <h3 id="recommendedMode">推薦模式: </h3>
+        <ul id="routeDetails"></ul>
+
     <!-- 地圖方框 -->
     <div class="map-container" style="display:block;">
         <h2>地圖結果：</h2>
         <div id="map"></div>
+        <iframe id="routeMap" width="100%" height="300px" style="border:1px solid #ccc;"></iframe>
+  
     </div>
+    
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -193,15 +213,18 @@
         const checkpointsDiv = document.getElementById('checkpointsDiv');
         const resultDiv = document.getElementById('result'); // 定義 resultDiv
         const resultText = document.getElementById('resultText'); // 定義 resultText
+        const mapContainer = document.getElementById('mapContainer');
+        const routeMapIframe = document.getElementById('routeMap'); // 獲取 iframe 元素
         const apiUrl = "https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route";
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
-        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
-        
+        const checkpoints = Array.from(document.getElementById('checkpointsDiv').querySelectorAll('select')).map(select => select.value);
+        const weight = document.querySelector('input[name="weight"]:checked');
+
         const requestData = {
             start,
             end: destination,
-            mode: 'driving',
+            mode: weight ? weight.value : '平均', // 使用者需求
             checkpoints
         };
        
@@ -231,20 +254,34 @@
                     resultDiv.style.display = 'block';
                     return;
                 }
-
+                // 顯示結果
                 resultText.innerHTML = `
-                    起點: ${data.start ? data.start : '未提供'}<br>
-                    目的地: ${data.destination ? data.destination : '未提供'}<br>
-                    最佳路線: ${data.best_route ? data.best_route.join(' -> ') : '無路線資料'}
+                    從: ${data.start || '未知'} 到 ${data.destination || '未知'}<br>
+                    推薦方式: ${data.mode || '未知'}<br>
+                    碳排放: ${data.carbon_emission ? data.carbon_emission.toFixed(2) + ' g CO2' : '未知'}<br>
+                    時間: ${data.time ? data.time + ' 秒' : '未知'}<br>
+                    距離: ${data.distance ? data.distance + ' 公尺' : '未知'}
                 `;
                 resultDiv.style.display = 'block';
+                // 更新「推薦模式」
+                if (data.mode) {
+                    document.getElementById('recommendedMode').innerHTML = `推薦模式: ${data.mode}`;
+                } else {
+                    document.getElementById('recommendedMode').innerHTML = `推薦模式: 無法獲取`;
+                }
 
+                // 更新 iframe 顯示地圖
+                if (data.map_url) { // 假設後端回傳了地圖的 URL
+                    routeMapIframe.src = data.map_url;  // 設置 iframe 的 src
+                }
+            
                 const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]);
                 map.eachLayer(layer => {
                     if (layer._url === undefined) map.removeLayer(layer);
                 });
                 L.polyline(routeCoords, { color: 'blue' }).addTo(map);
                 map.fitBounds(routeCoords);
+                map.invalidateSize(); // 確保地圖尺寸正確
             })
             .catch(error => {
                 resultText.innerHTML = `查詢錯誤: ${error.message}`;
