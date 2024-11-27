@@ -159,8 +159,11 @@
     "麗寶樂園站", "石岡站", "霧峰站", "潭子站"
     ];
 
-    
+    // 更新檢測點數量事件
+    checkpointsNum.addEventListener('change', function () {
+            checkpointsDiv.innerHTML = ''; // 清空檢測點選項
 
+    const num = parseInt(checkpointsNum.value, 10); // 取得選擇的數量
     if (num === 0) {
             const message = document.createElement('p');
             message.textContent = "未選擇檢測點。";
@@ -169,6 +172,7 @@
             return;
         }
 
+        // 根據選擇數量生成對應數量的選擇框
         for (let i = 0; i < num; i++) {
             const select = document.createElement('select');
             select.className = 'form-control mb-2';
@@ -183,13 +187,17 @@
             checkpointsDiv.appendChild(select);
         }
     });
+});
 
     document.getElementById('submitBtn').addEventListener('click', function () {
-        
+        const checkpointsDiv = document.getElementById('checkpointsDiv');
+        const resultDiv = document.getElementById('result'); // 定義 resultDiv
+        const resultText = document.getElementById('resultText'); // 定義 resultText
         const apiUrl = "https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route";
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
         const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
+        
         const requestData = {
             start,
             end: destination,
