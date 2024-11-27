@@ -221,12 +221,14 @@
         const checkpoints = Array.from(document.getElementById('checkpointsDiv').querySelectorAll('select')).map(select => select.value);
         const weight = document.querySelector('input[name="weight"]:checked');
 
-        const requestData = {
-            start,
-            end: destination,
-            mode: weight ? weight.value : '平均', // 使用者需求
-            checkpoints
+        const data = {
+            start: document.getElementById("start").value,
+            destination: document.getElementById("destination").value,
+            checkpoints: Array.from(document.querySelectorAll("#checkpointsDiv select"))
+                .map(select => select.value), // 取出所有選擇的檢測點
+            mode: document.querySelector('input[name="weight"]:checked').value
         };
+        
        
         fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
             method: 'POST',
@@ -234,15 +236,16 @@
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache'
             },
-            body: JSON.stringify(requestData)
+            body: JSON.stringify(data)
         })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('Network response was not ok');
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Success:', data);
                 if (!data || data.error) {
                     resultText.innerHTML = `錯誤: ${data.error || "伺服器回傳資料不正確"}`;
                     resultDiv.style.display = 'block';
