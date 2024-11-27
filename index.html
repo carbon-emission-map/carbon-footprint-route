@@ -120,24 +120,24 @@
 
     <button class="btn btn-success" id="submitBtn">查詢路線</button>
 
-   <!-- 查詢結果方框 -->
-   <div class="result" id="result">
+    <!-- 查詢結果方框 -->
+    <div class="result" id="result">
         <h2>結果：</h2>
         <p id="resultText"></p>
     </div>
 
-    </div>
+    <!-- 推薦模式部分 -->
+    <div class="recommended-mode-box">
         <h3 id="recommendedMode">推薦模式: </h3>
         <ul id="routeDetails"></ul>
+    </div>
 
     <!-- 地圖方框 -->
     <div class="map-container" style="display:block;">
         <h2>地圖結果：</h2>
         <div id="map"></div>
         <iframe id="routeMap" width="100%" height="300px" style="border:1px solid #ccc;"></iframe>
-  
     </div>
-    
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -145,152 +145,99 @@
     const map = L.map('map').setView([25.034, 121.564], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
-    
     document.addEventListener('DOMContentLoaded', function () {
-    const checkpointsNum = document.getElementById('checkpointsNum');
-    const checkpointsDiv = document.getElementById('checkpointsDiv');
-    
+        const checkpointsNum = document.getElementById('checkpointsNum');
+        const checkpointsDiv = document.getElementById('checkpointsDiv');
 
-    const locations = [
-    "台中高鐵站（烏日區）",
-    "東海大學(龍井區)", "靜宜大學(沙鹿區)", "弘光科技大學(沙鹿區)",
-    "台中車站（中區）", "豐原車站（豐原區）", "大慶車站（南區）",
-    "烏日車站（烏日區）", "清水車站（清水區）", "沙鹿車站（沙鹿區）",
-    "太原車站（北屯區）", "台中港車站（梧棲區）", "后里車站（后里區）",
-    "新烏日車站（烏日區，高鐵轉乘）", "石岡車站（石岡區）",
-    "國立中興大學（南區）", "國立臺中教育大學（西區）", "亞洲大學（霧峰區）",
-    "國立臺中科技大學（北區）", "逢甲大學（西屯區）", "嶺東科技大學（南屯區）",
-    "中山醫學大學（南區）", "臺中健康暨管理學院（霧峰區）", "僑光科技大學（北屯區）",
-    "台中國家歌劇院（西屯區）", "高美濕地（清水區）", "武陵農場（和平區）",
-    "大雪山森林遊樂區（和平區）", "后里馬場/中社花市（后里區）",
-    "薰衣草森林（新社區）", "東勢林場（東勢區）", "石岡水壩（石岡區）",
-    "秋紅谷廣場（西屯區）",
-    "宮原眼科（中區）", "彩虹眷村（南屯區）", "柳川水岸（中區）",
-    "新社莊園（新社區）", "一中街商圈（北區）", "港區藝術中心",
-    "逢甲夜市（西屯區）", "中華夜市（中區）", "東海夜市（龍井區）",
-    "忠孝夜市（南區）",
-    "寶覺寺（北區）", "萬佛寺（北屯區）", "大甲鎮瀾宮（大甲區）",
-    "霧峰林家花園（霧峰區）",
-    "麗寶樂園（后里區）", "九天民俗技藝團園區（霧峰區）", "台中港三井Outlet (梧棲區)",
-    "澄清醫院", "茄苳腳", "第二市場", "梧棲", "國軍英雄館", "台中公園", "干城站",
-    "朝馬站", "台中高鐵站", "忠信市場站", "逢甲大學站", "東海大學站",
-    "市政府站", "科博館站", "沙鹿站", "豐原站", "大甲站", "清水站",
-    "麗寶樂園站", "石岡站", "霧峰站", "潭子站"
-    ];
+        const locations = [
+            "台中高鐵站（烏日區）", "東海大學(龍井區)", "靜宜大學(沙鹿區)", "弘光科技大學(沙鹿區)",
+            "台中車站（中區）", "豐原車站（豐原區）", "大慶車站（南區）", "烏日車站（烏日區）", 
+            "清水車站（清水區）", "沙鹿車站（沙鹿區）"
+        ];
 
-    // 更新檢測點數量事件
-    checkpointsNum.addEventListener('change', function () {
+        // 更新檢測點數量事件
+        checkpointsNum.addEventListener('change', function () {
             checkpointsDiv.innerHTML = ''; // 清空檢測點選項
 
-    const num = parseInt(checkpointsNum.value, 10); // 取得選擇的數量
-    if (num === 0) {
-            const message = document.createElement('p');
-            message.textContent = "未選擇檢測點。";
-            message.style.color = 'gray';
-            checkpointsDiv.appendChild(message);
-            return;
-        }
+            const num = parseInt(checkpointsNum.value, 10); // 取得選擇的數量
+            if (num === 0) {
+                const message = document.createElement('p');
+                message.textContent = "未選擇檢測點。";
+                message.style.color = 'gray';
+                checkpointsDiv.appendChild(message);
+                return;
+            }
 
-        // 根據選擇數量生成對應數量的選擇框
-        for (let i = 0; i < num; i++) {
-            const select = document.createElement('select');
-            select.className = 'form-control mb-2';
+            // 根據選擇數量生成對應數量的選擇框
+            for (let i = 0; i < num; i++) {
+                const select = document.createElement('select');
+                select.className = 'form-control mb-2';
 
-            locations.forEach(location => {
-                const option = document.createElement('option');
-                option.value = location;
-                option.textContent = location;
-                select.appendChild(option);
-            });
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location;
+                    option.textContent = location;
+                    select.appendChild(option);
+                });
 
-            checkpointsDiv.appendChild(select);
-        }
+                checkpointsDiv.appendChild(select);
+            }
+        });
     });
-});
 
     document.getElementById('submitBtn').addEventListener('click', function () {
         const checkpointsDiv = document.getElementById('checkpointsDiv');
         const resultDiv = document.getElementById('result'); // 定義 resultDiv
         const resultText = document.getElementById('resultText'); // 定義 resultText
-        const mapContainer = document.getElementById('mapContainer');
         const routeMapIframe = document.getElementById('routeMap'); // 獲取 iframe 元素
-        const apiUrl = "https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route";
+        const apiUrl = "https://carbon123-fcada6ecf315-93df71b87b53.herokuapp.com"; // 使用您後端的 URL
+
+        // 擷取表單數據
         const start = document.getElementById('start').value;
         const destination = document.getElementById('destination').value;
-        const checkpoints = Array.from(document.getElementById('checkpointsDiv').querySelectorAll('select')).map(select => select.value);
-        const weight = document.querySelector('input[name="weight"]:checked');
+        const selectedWeight = document.querySelector('input[name="weight"]:checked')?.value || "平均";
+        const numCheckpoints = parseInt(document.getElementById('checkpointsNum').value, 10);
+        const checkpoints = Array.from(checkpointsDiv.querySelectorAll('select')).map(select => select.value);
 
-        const data = {
-            start: document.getElementById("start").value,
-            destination: document.getElementById("destination").value,
-            checkpoints: Array.from(document.querySelectorAll("#checkpointsDiv select"))
-                .map(select => select.value), // 取出所有選擇的檢測點
-            mode: document.querySelector('input[name="weight"]:checked').value
+        // 構造 POST 請求資料
+        const formData = {
+            start,
+            destination,
+            weight: selectedWeight,
+            numCheckpoints,
+            checkpoints
         };
-        
-       
-        fetch('https://carbon123-fcada6ecf315-93df71cde472.herokuapp.com/api/route', {
+
+        // 發送 POST 請求給後端
+        fetch(apiUrl + "/api/route", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-cache'
-            },
-            body: JSON.stringify(data)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Success:', data);
-                if (!data || data.error) {
-                    resultText.innerHTML = `錯誤: ${data.error || "伺服器回傳資料不正確"}`;
-                    resultDiv.style.display = 'block';
-                    return;
+        .then(response => response.json())
+        .then(data => {
+            if (data.route) {
+                resultText.innerText = data.route; // 顯示路線文本結果
+                resultDiv.style.display = "block"; // 顯示查詢結果
+
+                if (data.mapUrl) {
+                    routeMapIframe.src = data.mapUrl; // 更新 iframe 的來源
                 }
 
-                if (!data.coordinates || !Array.isArray(data.coordinates) || data.coordinates.length === 0) {
-                    resultText.innerHTML = `錯誤: 路徑座標資訊缺失`;
-                    resultDiv.style.display = 'block';
-                    return;
+                if (data.recommendedMode) {
+                    document.getElementById('recommendedMode').innerText = `推薦模式: ${data.recommendedMode}`;
+                    document.getElementById('routeDetails').innerHTML = data.routeDetails.map(detail => `<li>${detail}</li>`).join('');
                 }
-                // 顯示結果
-                resultText.innerHTML = `
-                    從: ${data.start || '未知'} 到 ${data.destination || '未知'}<br>
-                    推薦方式: ${data.mode || '未知'}<br>
-                    碳排放: ${data.carbon_emission ? data.carbon_emission.toFixed(2) + ' g CO2' : '未知'}<br>
-                    時間: ${data.time ? data.time + ' 秒' : '未知'}<br>
-                    距離: ${data.distance ? data.distance + ' 公尺' : '未知'}
-                `;
-                resultDiv.style.display = 'block';
-                // 更新「推薦模式」
-                if (data.mode) {
-                    document.getElementById('recommendedMode').innerHTML = `推薦模式: ${data.mode}`;
-                } else {
-                    document.getElementById('recommendedMode').innerHTML = `推薦模式: 無法獲取`;
-                }
-
-                // 更新 iframe 顯示地圖
-                if (data.map_url) { // 假設後端回傳了地圖的 URL
-                    routeMapIframe.src = data.map_url;  // 設置 iframe 的 src
-                }
-            
-                const routeCoords = data.coordinates.map(coord => [coord.lat, coord.lng]);
-                map.eachLayer(layer => {
-                    if (layer._url === undefined) map.removeLayer(layer);
-                });
-                L.polyline(routeCoords, { color: 'blue' }).addTo(map);
-                map.fitBounds(routeCoords);
-                map.invalidateSize(); // 確保地圖尺寸正確
-            })
-            .catch(error => {
-                resultText.innerHTML = `查詢錯誤: ${error.message}`;
-                resultDiv.style.display = 'block';
-            });
-    
+            } else {
+                resultText.innerText = "無法找到路線，請重新嘗試。";
+                resultDiv.style.display = "block"; // 顯示錯誤結果
+            }
+        })
+        .catch(error => {
+            console.error("錯誤:", error);
+            resultText.innerText = "請求錯誤，請稍後再試。";
+            resultDiv.style.display = "block";
+        });
     });
 </script>
 
