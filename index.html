@@ -6,7 +6,6 @@
     <title>碳足跡路線查詢</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         body {
             background: linear-gradient(to bottom, #B2E0F2, #A1C6E7);
@@ -25,7 +24,7 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .result, .map-container {
+        .result, .map-container, .recommended-mode-box {
             padding: 10px;
             background-color: #e9ffe9;
             border: 1px solid #b5ffb5;
@@ -36,7 +35,7 @@
             margin-top: 10px;
             display: none;
         }
-        #map {
+        #map, .static-map {
             width: 100%;
             height: 300px;
             border: 1px solid #ccc;
@@ -57,11 +56,9 @@
             margin-top: 20px;
             border: 1px solid #b5ffb5;
         }
-
         .map-container {
             width: 100%; /* Ensure map width matches the input form width */
         }
-
     </style>
 </head>
 <body>
@@ -136,15 +133,12 @@
     <div class="map-container" style="display:block;">
         <h2>地圖結果：</h2>
         <div id="map"></div>
-        <iframe id="routeMap" width="100%" height="300px" style="border:1px solid #ccc;"></iframe>
+        <!-- 改為顯示後端提供的靜態地圖圖片 -->
+        <img id="staticMap" class="static-map" alt="路線地圖">
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const map = L.map('map').setView([25.034, 121.564], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
-
     document.addEventListener('DOMContentLoaded', function () {
         const checkpointsNum = document.getElementById('checkpointsNum');
         const checkpointsDiv = document.getElementById('checkpointsDiv');
@@ -189,7 +183,7 @@
         const checkpointsDiv = document.getElementById('checkpointsDiv');
         const resultDiv = document.getElementById('result'); // 定義 resultDiv
         const resultText = document.getElementById('resultText'); // 定義 resultText
-        const routeMapIframe = document.getElementById('routeMap'); // 獲取 iframe 元素
+        const staticMap = document.getElementById('staticMap'); // 獲取靜態地圖圖片元素
         const apiUrl = "https://carbon123-fcada6ecf315-93df71b87b53.herokuapp.com"; // 使用您後端的 URL
 
         // 擷取表單數據
@@ -221,7 +215,8 @@
                 resultDiv.style.display = "block"; // 顯示查詢結果
 
                 if (data.mapUrl) {
-                    routeMapIframe.src = data.mapUrl; // 更新 iframe 的來源
+                    staticMap.src = data.mapUrl; // 顯示靜態地圖圖片
+                    staticMap.style.display = 'block'; // 顯示地圖
                 }
 
                 if (data.recommendedMode) {
